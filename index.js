@@ -26,6 +26,7 @@ async function run() {
   try {
     await client.connect();
     const productCollection = client.db("nearby-motors").collection("products");
+    const orderCollection = client.db("nearby-motors").collection("orders");
 
     app.get("/product", async (req, res) => {
       const query = {};
@@ -38,6 +39,13 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const product = await productCollection.findOne(query);
       res.send(product);
+    });
+    app.post("/order", async (req, res) => {
+      console.log(req.body);
+      const newOrder = req.body;
+      const result = await orderCollection.insertOne(newOrder);
+      console.log(result);
+      res.send(result);
     });
   } finally {
   }
