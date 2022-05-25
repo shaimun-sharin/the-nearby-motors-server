@@ -89,6 +89,10 @@ async function run() {
       );
       res.send({ result, token });
     });
+    app.get("/user", async (req, res) => {
+      const users = await userCollection.find().toArray();
+      res.send(users);
+    });
 
     // app.put("/product/:id", async (req, res) => {
     //   const id = req.params.id;
