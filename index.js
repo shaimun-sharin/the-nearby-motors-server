@@ -47,6 +47,12 @@ async function run() {
       console.log(result);
       res.send(result);
     });
+    app.get("/order", async (req, res) => {
+      const client = req.query.client;
+      const query = { client: client };
+      const orders = await orderCollection.find(query).toArray();
+      res.send(orders);
+    });
     // app.put("/product/:id", async (req, res) => {
     //   const id = req.params.id;
     //   const newQuantity = parseInt(req.body);
