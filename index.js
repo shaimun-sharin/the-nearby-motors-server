@@ -37,12 +37,23 @@ function verifyJWT(req, res, next) {
     next();
   });
 }
+
 async function run() {
   try {
     await client.connect();
     const productCollection = client.db("nearby-motors").collection("products");
     const orderCollection = client.db("nearby-motors").collection("orders");
     const userCollection = client.db("nearby-motors").collection("users");
+    const verifyAdmin = async (req, res, next) => {
+      const initiator = req.decoded.email;
+      const initiatorAcc = await userCollection.findOne({ email: initiator });
+      if (initiatorAcc.role === "admin") {
+        next();
+      } else {
+        res.status(403).send({ message: "forbidden" });
+      }
+    };
+
     app.get("/product", async (req, res) => {
       const query = {};
       const cursor = productCollection.find(query);
@@ -93,7 +104,7 @@ async function run() {
       const users = await userCollection.find().toArray();
       res.send(users);
     });
-    app.put("/user/admin/:email", verifyJWT, async (req, res) => {
+    app.put("/user/admin/:email", verifyJWT, verifyAdmin, async (req, res) => {
       const email = req.params.email;
 
       const filter = { email: email };
@@ -104,7 +115,12 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-
+    app.get("/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({ email: email });
+      const isAdmin = user.role === "admin";
+      res.send({ admin: isAdmin });
+    });
     // app.put("/product/:id", async (req, res) => {
     //   const id = req.params.id;
     //   const newQuantity = parseInt(req.body);
