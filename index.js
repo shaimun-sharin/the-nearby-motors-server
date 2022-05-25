@@ -27,7 +27,7 @@ async function run() {
     await client.connect();
     const productCollection = client.db("nearby-motors").collection("products");
     const orderCollection = client.db("nearby-motors").collection("orders");
-
+    const userCollection = client.db("nearby-motors").collection("users");
     app.get("/product", async (req, res) => {
       const query = {};
       const cursor = productCollection.find(query);
@@ -53,6 +53,19 @@ async function run() {
       const orders = await orderCollection.find(query).toArray();
       res.send(orders);
     });
+    app.put("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+
+      res.send(result);
+    });
+
     // app.put("/product/:id", async (req, res) => {
     //   const id = req.params.id;
     //   const newQuantity = parseInt(req.body);
