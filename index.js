@@ -182,6 +182,12 @@ async function run() {
       console.log(result);
       res.send(result);
     });
+    app.delete("/order/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await orderCollection.deleteOne(filter);
+      res.send(result);
+    });
     app.get("/review", async (req, res) => {
       const query = {};
       const cursor = reviewCollection.find(query);
