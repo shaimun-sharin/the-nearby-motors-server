@@ -46,6 +46,7 @@ async function run() {
     const userCollection = client.db("nearby-motors").collection("users");
     const reviewCollection = client.db("nearby-motors").collection("reviews");
     const paymentCollection = client.db("nearby-motors").collection("payment");
+    const profileCollection = client.db("nearby-motors").collection("profile");
     const verifyAdmin = async (req, res, next) => {
       const initiator = req.decoded.email;
       const initiatorAcc = await userCollection.findOne({ email: initiator });
@@ -188,12 +189,39 @@ async function run() {
       const result = await orderCollection.deleteOne(filter);
       res.send(result);
     });
+
     app.get("/review", async (req, res) => {
       const query = {};
       const cursor = reviewCollection.find(query);
       const reviews = await cursor.toArray();
       res.send(reviews);
     });
+    app.patch("/order/:id", async (req, res) => {
+      const id = req.params.id;
+      const payment = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+          pending: true,
+        },
+      };
+
+      const updatedBooking = await orderCollection.updateOne(
+        filter,
+        updatedDoc
+      );
+      res.send(updatedBooking);
+    });
+    app.post("/profile", async (req, res) => {
+      console.log(req.body);
+      const profile = req.body;
+      const result = await profileCollection.insertOne(profile);
+      console.log(result);
+      res.send(result);
+    });
+    app.de;
   } finally {
   }
 }
