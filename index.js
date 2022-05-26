@@ -90,6 +90,12 @@ async function run() {
       const orders = await cursor.toArray();
       res.send(orders);
     });
+    app.get("/order/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const order = await orderCollection.findOne(query);
+      res.send(order);
+    });
     app.get("/order", verifyJWT, async (req, res) => {
       const client = req.query.client;
       const decodedEmail = req.decoded.email;
