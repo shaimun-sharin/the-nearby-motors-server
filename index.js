@@ -44,6 +44,7 @@ async function run() {
     const productCollection = client.db("nearby-motors").collection("products");
     const orderCollection = client.db("nearby-motors").collection("orders");
     const userCollection = client.db("nearby-motors").collection("users");
+    const reviewCollection = client.db("nearby-motors").collection("reviews");
     const paymentCollection = client.db("nearby-motors").collection("payment");
     const verifyAdmin = async (req, res, next) => {
       const initiator = req.decoded.email;
@@ -174,7 +175,19 @@ async function run() {
       );
       res.send(updatedBooking);
     });
-
+    app.post("/review", async (req, res) => {
+      console.log(req.body);
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      console.log(result);
+      res.send(result);
+    });
+    app.get("/review", async (req, res) => {
+      const query = {};
+      const cursor = orderCollection.find(query);
+      const reviews = await cursor.toArray();
+      res.send(reviews);
+    });
     // app.put("/product/:id", async (req, res) => {
     //   const id = req.params.id;
     //   const newQuantity = parseInt(req.body);
