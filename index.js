@@ -44,6 +44,7 @@ async function run() {
     const productCollection = client.db("nearby-motors").collection("products");
     const orderCollection = client.db("nearby-motors").collection("orders");
     const userCollection = client.db("nearby-motors").collection("users");
+    const paymentCollection = client.db("nearby-motors").collection("payment");
     const verifyAdmin = async (req, res, next) => {
       const initiator = req.decoded.email;
       const initiatorAcc = await userCollection.findOne({ email: initiator });
@@ -96,7 +97,7 @@ async function run() {
       const order = await orderCollection.findOne(query);
       res.send(order);
     });
-    app.get("/order", verifyJWT, async (req, res) => {
+    app.get("/order", async (req, res) => {
       const client = req.query.client;
       const decodedEmail = req.decoded.email;
       if (client === decodedEmail) {
@@ -155,6 +156,25 @@ async function run() {
       });
       res.send({ clientSecret: paymentIntent.client_secret });
     });
+    app.patch("/order/:id", async (req, res) => {
+      const id = req.params.id;
+      const payment = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+        },
+      };
+
+      const result = await paymentCollection.insertOne(payment);
+      const updatedBooking = await orderCollection.updateOne(
+        filter,
+        updatedDoc
+      );
+      res.send(updatedBooking);
+    });
+
     // app.put("/product/:id", async (req, res) => {
     //   const id = req.params.id;
     //   const newQuantity = parseInt(req.body);
